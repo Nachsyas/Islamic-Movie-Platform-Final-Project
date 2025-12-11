@@ -1,161 +1,152 @@
-Laporan Pengembangan Aplikasi: Islamic Movie Platform
-1. Penjelasan Arsitektur Aplikasi
-Untuk memastikan aplikasi berjalan stabil dan mudah dikembangkan di masa depan, kami menerapkan konsep Layered Architecture (Arsitektur Berlapis). Secara sederhana, struktur ini bekerja mirip dengan sebuah restoran yang terbagi menjadi tiga bagian vital: Ruang Makan (tempat pelanggan melihat menu), Pelayan (yang mencatat dan mengantar pesanan), dan Dapur (tempat bahan baku diolah).
+🎬 Islamic Movie Platform
+Islamic Movie Platform adalah aplikasi mobile berbasis Flutter yang dirancang khusus untuk memudahkan pengguna menemukan, menelusuri, dan melacak film serta serial TV bertema sejarah Islam dan Kekaisaran (Ottoman). Aplikasi ini menerapkan Layered Architecture untuk memastikan kode yang bersih, terstruktur, dan mudah dikembangkan.
 
-Dalam implementasi teknis menggunakan framework Flutter, kode program dipisahkan ke dalam tiga lapisan utama berikut:
+📱 Fitur Utama
+Otentikasi Pengguna: Login dan Registrasi aman menggunakan Firebase Authentication.
 
-A. Struktur Lapisan (Layers)
-1. Presentation Layer (UI/View) – "Ruang Makan" Lapisan ini adalah segala sesuatu yang dilihat dan berinteraksi langsung dengan pengguna di layar ponsel. Secara teknis, kode-kode ini berada di dalam folder screens dan widgets.
+Jelajah Konten:
 
-Screens (Layar): Halaman utama seperti Login, Register, Home, dan Detail Film dibangun menggunakan StatefulWidget. Ini memungkinkan tampilan aplikasi berubah secara dinamis, misalnya menampilkan animasi loading saat data sedang diambil dan memunculkan poster film setelah data tersedia.
+Carousel "Trending Islami" di halaman utama.
 
-Widgets (Komponen): Kami memecah tampilan menjadi komponen-komponen kecil yang dapat digunakan ulang, seperti MovieCard untuk kartu poster film dan AuthBackground untuk animasi latar belakang, agar kode lebih rapi dan efisien.
+Kategori khusus untuk "Film Sejarah Islam" dan "Serial TV Kekaisaran".
 
-2. Business Logic & Service Layer (ViewModel) – "Pelayan" Lapisan ini berfungsi sebagai "otak" aplikasi yang bekerja di belakang layar. Saat pengguna menekan tombol, lapisan inilah yang bekerja menghubungi server atau menyimpan data. Kode tersimpan dalam folder viewmodel.
+Pencarian Cerdas: Fitur pencarian (Multi-search) untuk menemukan film atau serial TV spesifik.
 
-TmdbApiService: Bertugas menghubungi internet untuk mengambil data film terbaru.
+Manajemen Riwayat & Favorit:
 
-AuthService: Berperan sebagai penjaga keamanan yang memverifikasi email dan password pengguna ke sistem (Firebase).
+Menyimpan riwayat tontonan secara lokal (In-memory State).
 
-RecentlyViewedService: Bertugas mencatat riwayat tontonan pengguna ke dalam memori aplikasi menggunakan fitur ValueNotifier, sehingga data riwayat dapat muncul secara instan tanpa memuat ulang halaman.
+Memisahkan riwayat antara Film dan TV Series.
 
-3. Data Layer (Model) – "Bahan Baku" Agar aplikasi tidak mengalami kesalahan dalam membaca data (seperti tertukar antara judul film dan rating), kami membuat standarisasi format data di folder model. Komponen utamanya adalah Class Movie, yang bertugas menerjemahkan data mentah (JSON) dari server menjadi objek yang dapat dimengerti dan diolah oleh aplikasi.
+Fitur "Tambah Manual" ke riwayat tanpa harus memutar video.
 
-B. Alur Data (Cara Kerja)
-Proses kerja aplikasi dimulai saat pengguna membuka aplikasi atau menekan tombol (Request). Selanjutnya, sistem di lapisan layanan akan pergi ke internet untuk mengambil data film (Processing). Setelah data didapatkan dan diolah, data tersebut disajikan kembali ke layar pengguna (Display). Terakhir, setiap kali pengguna memilih film, aplikasi secara otomatis mencatatnya ke dalam sistem penyimpanan sementara agar muncul di menu Riwayat (Interaction).
+Menandai konten sebagai Favorit.
 
-Getty Images
+Detail & Trailer: Informasi lengkap sinopsis, rating, dan tautan langsung untuk menonton trailer di YouTube.
 
-2. Penjelasan API yang Digunakan
-Aplikasi ini tidak memproduksi konten film sendiri, melainkan "meminjam" data dari penyedia layanan eksternal melalui teknologi yang disebut API (Application Programming Interface). API bertindak sebagai jembatan penghubung antara aplikasi kita dengan gudang data film dunia.
+Profil Pengguna: Tampilan profil sederhana dengan fitur Logout.
 
-A. The Movie Database (TMDb) API
-Kami menggunakan layanan dari TMDb, salah satu penyedia database film terbesar, dengan menggunakan "kunci akses" (API Key) khusus. Implementasinya mencakup:
+🛠 Teknologi & Arsitektur
+Aplikasi ini dibangun menggunakan:
 
-Search Movie: Secara spesifik mencari film dengan kata kunci "Islam".
+Frontend: Flutter (Dart SDK ^3.9.0)
 
-Search TV: Untuk mendapatkan hasil yang lebih komprehensif, aplikasi secara cerdas menggabungkan pencarian dua kata kunci sekaligus, yaitu "Islam" dan "Ottoman/Turki", lalu menyatukannya menjadi satu daftar tontonan yang lengkap.
+Backend (Auth & DB): Firebase Auth & Cloud Firestore.
 
-Multi Search: Fitur yang memberikan kebebasan kepada pengguna untuk mencari judul film atau serial apa saja sesuai keinginan.
+Data Source: The Movie Database (TMDb) API v3.
 
-B. Firebase Services
-Untuk keamanan dan manajemen pengguna, kami menggunakan layanan Google Firebase:
+State Management: Native ValueNotifier & setState.
 
-Authentication: Bertindak sebagai satpam digital yang memvalidasi kebenaran email dan password saat pengguna Login atau Daftar.
+Struktur Arsitektur
+Proyek ini menggunakan pendekatan Layered Architecture:
 
-Cloud Firestore: Berfungsi sebagai buku induk digital yang menyimpan data administratif, seperti tanggal pembuatan akun pengguna.
+Presentation Layer (/screens, /widgets): Menangani UI dan interaksi pengguna.
 
-3. Hasil Pengujian (Source Code Representation)
-Pada bagian ini, kami memisahkan pengujian menjadi dua kategori vital: Mekanisme Penanganan Error (bagaimana aplikasi bertahan saat terjadi kesalahan) dan Implementasi Skenario Sukses (bagaimana aplikasi bekerja saat kondisi normal).
+ViewModel Layer (/viewmodel): Menangani logika bisnis, komunikasi API, dan manajemen state.
 
-A. Mekanisme Penanganan Error (Error Handling)
-Kualitas aplikasi tidak hanya dinilai dari fitur yang berjalan, tetapi juga bagaimana ia menangani kegagalan tanpa mengalami kerusakan fatal (crash). Berikut adalah implementasi kode pertahanannya:
+Model Layer (/model): Menangani parsing data JSON dan struktur objek.
 
-1. Validasi Input & Keamanan Login Sistem tidak akan memproses data jika input kosong. Selain itu, jika terjadi kesalahan dari server (seperti password salah), pesan teknis diterjemahkan menjadi bahasa yang dimengerti pengguna.
+🔗 Daftar Endpoint API
+Aplikasi ini menggunakan The Movie Database (TMDb) API. Berikut adalah daftar endpoint yang diimplementasikan di dalam TmdbApiService:
 
-Dart
+1. Mencari Film Bertema Islam
+Mengambil daftar film yang relevan dengan kata kunci "Islam".
 
-// [UI] Cek apakah kolom isian kosong sebelum dikirim
-if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text("Isi Email & Password"))
-  );
-  return;
-}
+Endpoint: GET /search/movie
 
-// [Service] Menangkap pesan error sistem dan menerjemahkannya
-try {
-  // ... proses login ke Firebase ...
-} on FirebaseAuthException catch (e) {
-  if (e.code == 'user-not-found') {
-    throw 'Email tidak ditemukan.'; // Pesan yang mudah dimengerti user
-  } else if (e.code == 'wrong-password') {
-    throw 'Password salah.';
-  }
-}
-2. Antisipasi Gambar Rusak (Broken Image) Kami mengantisipasi kemungkinan link gambar kadaluwarsa atau koneksi lambat. Daripada menampilkan area kosong (blank), aplikasi secara otomatis menampilkan ikon pengganti.
+Query Params: query=Islam, page=1
 
-Dart
+2. Mencari Serial TV (Gabungan)
+Aplikasi melakukan strategi Parallel Fetching untuk menggabungkan dua kata kunci pencarian agar hasil lebih komprehensif.
 
-Image.network(
-  movie.posterURL,
-  // ... pengaturan ukuran ...
-  errorBuilder: (ctx, err, st) => Container(
-    height: 180,
-    color: Colors.grey[800], // Menampilkan kotak abu-abu
-    child: const Icon(
-      Icons.broken_image, // Menampilkan ikon peringatan
-      color: Colors.white54
-    ),
-  ),
-),
-3. Penanganan Data Riwayat Kosong Bagi pengguna baru, halaman riwayat tidak boleh terlihat rusak atau kosong melompong. Kode berikut memastikan adanya pesan informatif saat belum ada data.
+Endpoint 1: GET /search/tv (Query: Islam)
 
-Dart
+Endpoint 2: GET /search/tv (Query: Ottoman)
 
-// Cek apakah daftar riwayat kosong?
-if (movies.isEmpty)
-  Container(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Icon(Icons.history, color: Colors.white24, size: 30),
-        Text(
-          "Belum ada riwayat $type", // Tulis pesan informasi ini
-          style: const TextStyle(color: Colors.white38, fontSize: 12)
-        ),
-      ],
-    ),
-  )
-B. Implementasi Skenario Sukses (Success State)
-Bagian ini menunjukkan kode yang dieksekusi ketika sistem berjalan sesuai rencana, mulai dari navigasi halaman hingga logika penyimpanan data.
+Catatan: Hasil dari kedua request digabungkan dan duplikasi dihapus.
 
-1. Transisi Halaman Login Berhasil Ketika verifikasi sukses, aplikasi segera membuka akses dan memindahkan pengguna ke layar utama secara permanen (tidak bisa kembali ke login dengan tombol back).
+3. Pencarian Umum (Search)
+Digunakan pada halaman pencarian untuk menemukan Film atau TV Series berdasarkan input pengguna.
 
-Dart
+Endpoint: GET /search/multi
 
-await _authService.signIn(email: ..., password: ...);
-if (mounted) {
-  // Ganti halaman Login dengan Halaman Utama (MainScreen) secara penuh
-  Navigator.pushReplacement(
-    context, 
-    MaterialPageRoute(builder: (context) => const MainScreen())
-  );
-}
-2. Rendering Daftar Film (Horizontal Scroll) Saat data film berhasil diambil dari API, kode ini menyusunnya menjadi deretan kartu yang rapi dan dapat digeser ke samping (scrollable).
+Query Params: query={user_input}
+
+4. Mendapatkan Trailer
+Mengambil "Key" video untuk membuat URL YouTube (https://www.youtube.com/watch?v={key}).
+
+Endpoint Movie: GET /movie/{id}/videos
+
+Endpoint TV: GET /tv/{id}/videos
+
+Filter: Hanya mengambil video dengan tipe Trailer dan site YouTube.
+
+🚀 Cara Instalasi & Menjalankan Aplikasi
+Ikuti langkah-langkah berikut untuk menjalankan proyek ini di mesin lokal Anda:
+
+Prasyarat
+Flutter SDK terinstal.
+
+Akun Firebase & Proyek TMDb (API Key).
+
+Langkah 1: Clone Repositori
+Bash
+
+git clone https://github.com/username-anda/Islamic-Movie-Plaform-Final-Project.git
+cd Islamic-Movie-Plaform-Final-Project
+Langkah 2: Instal Dependensi
+Jalankan perintah berikut di terminal untuk mengunduh semua library yang dibutuhkan (seperti firebase_core, http, url_launcher, dll).
+
+Bash
+
+flutter pub get
+Langkah 3: Konfigurasi Firebase
+File firebase_options.dart sudah disertakan dalam source code. Namun, pastikan konfigurasi google-services.json (Android) atau GoogleService-Info.plist (iOS) sudah sesuai jika Anda mengganti proyek Firebase.
+
+Pastikan Email/Password Sign-in provider diaktifkan di konsol Firebase Authentication.
+
+Pastikan Cloud Firestore sudah dibuat dalam mode Test Mode atau Production.
+
+Langkah 4: Konfigurasi API Key (Opsional)
+API Key TMDb saat ini sudah tertanam di file lib/viewmodel/tmdb_api_service.dart. Jika ingin menggantinya dengan key Anda sendiri:
+
+Buka lib/viewmodel/tmdb_api_service.dart.
+
+Ganti nilai variabel _apiKey:
 
 Dart
 
-// Tampilkan daftar film yang bisa digeser (Scroll Horizontal)
-SizedBox(
-  height: 230,
-  child: ListView.builder(
-    scrollDirection: Axis.horizontal, 
-    itemCount: movies.length,
-    itemBuilder: (ctx, i) => Padding(
-      padding: const EdgeInsets.only(right: 12),
-      child: MovieCard(movie: movies[i]), // Render komponen kartu film
-    ),
-  ),
-),
-3. Logika Cerdas Penyimpanan Riwayat & Favorit Sistem secara otomatis memilah jenis konten (TV atau Film) ke dalam daftar yang berbeda dan memungkinkan perubahan status favorit secara instan (real-time).
+final String _apiKey = "MASUKKAN_API_KEY_ANDA_DISINI";
+Langkah 5: Jalankan Aplikasi
+Hubungkan device (Android/iOS) atau gunakan Emulator, lalu jalankan:
 
-Dart
+Bash
 
-static void addToHistory(Movie movie) {
-  // Cek jenis konten: Apakah TV Series atau Film?
-  if (movie.mediaType == 'tv') {
-    _addToList(tvHistoryNotifier, movie); // Masukkan ke rak TV
-  } else {
-    _addToList(movieHistoryNotifier, movie); // Masukkan ke rak Film
-  }
-}
+flutter run
+📂 Struktur Folder
+Plaintext
 
-static void toggleFavorite(Movie movie) {
-  // Ubah status "Suka" atau "Tidak Suka" secara langsung
-  final index = list.indexWhere((m) => m.id == movie.id);
-  if (index != -1) {
-    list[index].isFavorite = !list[index].isFavorite; // Balik statusnya
-    notifier.value = [...list]; // Perbarui tampilan layar
-  }
-}
+lib/
+├── main.dart                  # Titik awal aplikasi
+├── firebase_options.dart      # Konfigurasi Firebase
+├── model/
+│   └── movie_model.dart       # Model data Film/TV
+├── screens/
+│   ├── login_screen.dart      # Halaman Login
+│   ├── register_screen.dart   # Halaman Daftar
+│   ├── main_screen.dart       # Navigasi Bottom Bar
+│   ├── home_screen.dart       # Halaman Utama (Dashboard)
+│   ├── search_screen.dart     # Halaman Pencarian
+│   ├── profile_screen.dart    # Halaman Profil
+│   └── movie_detail_screen.dart # Halaman Detail & Trailer
+├── viewmodel/
+│   ├── auth_service.dart      # Logika Firebase Auth
+│   ├── firestore_service.dart # Logika Firestore Database
+│   ├── recently_viewed_service.dart # Logika History & Favorit
+│   └── tmdb_api_service.dart  # Komunikasi ke API TMDb
+└── widgets/
+    ├── auth_background.dart   # Widget Background Animasi
+    ├── for_you_carousel.dart  # Widget Carousel Slider
+    └── movie_card.dart        # Widget Kartu Poster Film
+⚠️ Catatan Penting
+Error Handling Gambar: Jika poster film tidak muncul (link rusak), aplikasi akan menampilkan ikon broken image dengan background abu-abu agar UI tetap rapi.
