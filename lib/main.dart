@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:myapp/screens/login_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+import 'firebase_options.dart'; // Pastikan file ini ada
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
   runApp(const MyApp());
 }
 
@@ -51,19 +50,20 @@ class MyApp extends StatelessWidget {
           elevation: 0,
           titleTextStyle: TextStyle(
              fontSize: 20,
-             fontWeight: FontWeight.w600,
+             fontWeight: FontWeight.w600
            ),
         ),
-         
-         inputDecorationTheme: InputDecorationTheme(
+
+         inputDecorationTheme: InputDecorationTheme( 
           filled: true,
-          fillColor: Colors.black.withOpacity(0.3),
+          fillColor: Colors.black.withOpacity(0.3), 
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
           ),
           labelStyle: TextStyle(color: Colors.grey.shade400),
           prefixIconColor: Colors.grey.shade400,
+          // contentPadding dihapus dari sini, diatur di tiap field
         ),
 
          bottomNavigationBarTheme: BottomNavigationBarThemeData(

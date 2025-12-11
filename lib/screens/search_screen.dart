@@ -1,132 +1,72 @@
 import 'package:flutter/material.dart';
+import 'package:myapp/viewmodel/tmdb_api_service.dart';
 import 'package:myapp/model/movie_model.dart';
-import 'package:myapp/viewmodel/movie_data_service.dart';
+import 'package:myapp/widgets/auth_background.dart';
 import 'package:myapp/widgets/movie_card.dart';
-import 'package:myapp/widgets/scrolling_background.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
-
   @override
   State<SearchScreen> createState() => _SearchScreenState();
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  final _searchController = TextEditingController();
-  List<Movie> _filteredMovies = [];
-  List<Movie> _allMovies = MovieDataService.allMoviesNotifier.value;
+  final TmdbApiService _apiService = TmdbApiService();
+  final TextEditingController _searchController = TextEditingController();
+  List<Movie> _searchResults = [];
+  bool _isLoading = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _filteredMovies = _allMovies;
-    _searchController.addListener(_onSearchChanged);
-    MovieDataService.allMoviesNotifier.addListener(_onGlobalDataChanged);
-  }
-
-  @override
-  void dispose() {
-    _searchController.removeListener(_onSearchChanged);
-    _searchController.dispose();
-    MovieDataService.allMoviesNotifier.removeListener(_onGlobalDataChanged);
-    super.dispose();
-  }
-  void _onGlobalDataChanged() {
-    if (mounted) {
-      setState(() {
-        _allMovies = MovieDataService.allMoviesNotifier.value;
-        _onSearchChanged();
-      });
+  void _onSearch() async {
+    final query = _searchController.text.trim();
+    if (query.isEmpty) return;
+    setState(() => _isLoading = true);
+    try {
+      final results = await _apiService.searchContent(query);
+      setState(() => _searchResults = results);
+    } catch (e) {
+      if(mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Gagal mencari")));
+    } finally {
+      setState(() => _isLoading = false);
     }
-  }
-  void _onSearchChanged() {
-    String query = _searchController.text.toLowerCase();
-    setState(() {
-      if (query.isEmpty) {
-        _filteredMovies = _allMovies;
-      } else {
-        _filteredMovies = _allMovies
-            .where((movie) => movie.title.toLowerCase().contains(query))
-            .toList();
-      }
-    });
-  }
-  void _clearSearch() {
-    _searchController.clear();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        const ScrollingBackground(),
-        Scaffold(
-          backgroundColor: Colors.transparent,
-          body: SafeArea(
-            child: CustomScrollView(
-              slivers: [
-                SliverAppBar(
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  pinned: true,
-                  title: _buildSearchBar(),
+    return AuthBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0, title: const Text("Pencarian")),
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: TextField(
+                controller: _searchController,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: "Cari Film / Serial TV...", hintStyle: const TextStyle(color: Colors.white70),
+                  filled: true, fillColor: Colors.white24,
+                  prefixIcon: const Icon(Icons.search, color: Colors.white),
+                  suffixIcon: IconButton(icon: const Icon(Icons.arrow_forward, color: Colors.white), onPressed: _onSearch),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                SliverPadding(
-                  padding: const EdgeInsets.all(16.0),
-                  sliver: _buildResultsGrid(),
-                ),
-              ],
+                onSubmitted: (_) => _onSearch(),
+              ),
             ),
-          ),
-        ),
-      ],
-    );
-  }
-  Widget _buildSearchBar() {
-    return TextField(
-      controller: _searchController,
-      style: const TextStyle(color: Colors.white),
-      decoration: InputDecoration(
-        hintText: 'Cari film, serial, dan lainnya...',
-        hintStyle: TextStyle(color: Colors.grey.shade400),
-        prefixIcon: const Icon(Icons.search),
-        suffixIcon: _searchController.text.isNotEmpty
-            ? IconButton(
-                icon: Icon(Icons.clear, color: Colors.grey.shade400),
-                onPressed: _clearSearch,
-              )
-            : null,
-        contentPadding: const EdgeInsets.symmetric(vertical: 14.0),
-      ),
-    );
-  }
-  Widget _buildResultsGrid() {
-    if (_filteredMovies.isEmpty) {
-      return const SliverToBoxAdapter(
-        child: Center(
-          child: Padding(
-            padding: EdgeInsets.only(top: 50.0),
-            child: Text(
-              'Tidak ada film yang ditemukan',
-              style: TextStyle(color: Colors.white70, fontSize: 16),
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : GridView.builder(
+                      padding: const EdgeInsets.all(16),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3, childAspectRatio: 0.55, crossAxisSpacing: 10, mainAxisSpacing: 10,
+                      ),
+                      itemCount: _searchResults.length,
+                      itemBuilder: (context, index) => MovieCard(movie: _searchResults[index]),
+                    ),
             ),
-          ),
+          ],
         ),
-      );
-    }
-    return SliverGrid(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          final movie = _filteredMovies[index];
-          return MovieCard(movie: movie);
-        },
-        childCount: _filteredMovies.length,
-      ),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        childAspectRatio: 0.55,
-        crossAxisSpacing: 16.0,
-        mainAxisSpacing: 16.0,  
       ),
     );
   }

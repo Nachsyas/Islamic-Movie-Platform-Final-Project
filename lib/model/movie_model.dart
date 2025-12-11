@@ -2,23 +2,37 @@ class Movie {
   final String id;
   final String title;
   final String posterURL;
-  
-  final String synopsis;
+  final String backdropURL;
   final double rating;
+  final String synopsis;
+  final String mediaType; // 'movie' atau 'tv'
+  bool isFavorite; // Bisa diedit (mutable)
 
-  const Movie({
+  Movie({
     required this.id,
     required this.title,
     required this.posterURL,
-    this.synopsis = 'Sinopsis film belum tersedia.',
-    this.rating = 0.0,
+    this.backdropURL = '',
+    required this.rating,
+    this.synopsis = '',
+    this.mediaType = 'movie',
+    this.isFavorite = false,
   });
-  
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Movie && runtimeType == other.runtimeType && id == other.id;
 
-  @override
-  int get hashCode => id.hashCode;
+  factory Movie.fromJson(Map<String, dynamic> json, {String defaultType = 'movie'}) {
+    return Movie(
+      id: json['id'].toString(),
+      // TV Series pakai 'name', Movie pakai 'title'
+      title: json['title'] ?? json['name'] ?? 'No Title',
+      posterURL: json['poster_path'] != null
+          ? 'https://image.tmdb.org/t/p/w500${json['poster_path']}'
+          : 'https://via.placeholder.com/500x750?text=No+Image',
+      backdropURL: json['backdrop_path'] != null
+          ? 'https://image.tmdb.org/t/p/w780${json['backdrop_path']}'
+          : '',
+      rating: (json['vote_average'] as num?)?.toDouble() ?? 0.0,
+      synopsis: json['overview'] ?? 'Sinopsis tidak tersedia.',
+      mediaType: json['media_type'] ?? defaultType,
+    );
+  }
 }

@@ -34,7 +34,6 @@ class _ForYouCarouselState extends State<ForYouCarousel> {
       } else {
         _currentPage = 0;
       }
-
       if (_pageController.hasClients) {
         _pageController.animateToPage(
           _currentPage,
@@ -58,40 +57,37 @@ class _ForYouCarouselState extends State<ForYouCarousel> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-          child: Row( 
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                widget.title,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                widget.title, 
+                style: const TextStyle(
+                  fontSize: 18, 
+                  fontWeight: FontWeight.bold, 
+                  color: Colors.white
+                )
               ),
-              TextButton(
-                onPressed: widget.onSeeAllTap,
-                child: Text(
-                  'Lihat Semua',
-                  style: TextStyle(color: Theme.of(context).primaryColor),
-                ),
-              )
+              // Tombol Lihat Semua (Opsional/Hidden)
+              const SizedBox(), 
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         
+        // --- PERBAIKAN DISINI ---
+        // Ubah height dari 200 menjadi 260
+        // Agar cukup menampung MovieCard (Gambar 180 + Teks + Rating)
         SizedBox(
-          height: 200,
+          height: 260, 
           child: PageView.builder(
             controller: _pageController,
             itemCount: widget.movies.length,
-            onPageChanged: (int page) {
-            },
             itemBuilder: (context, index) {
-              final movie = widget.movies[index];
               return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0), 
-                child: MovieCard(movie: movie), 
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: MovieCard(movie: widget.movies[index]),
               );
             },
           ),

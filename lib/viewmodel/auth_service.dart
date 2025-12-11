@@ -1,73 +1,57 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:myapp/viewmodel/firestore_service.dart';
-import 'package:flutter/foundation.dart'; 
+import 'package:flutter/foundation.dart'; // Untuk debugPrint
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirestoreService _firestoreService = FirestoreService();
 
-  Stream<User?> get userStream => _auth.authStateChanges();
-  
-  Future<User?> registerWithEmailPassword({
-    required String email,
-    required String password,
-  }) async {
+  // --- FUNGSI REGISTRASI (DAFTAR) ---
+  Future<User?> signUp({required String email, required String password}) async {
     try {
       UserCredential result = await _auth.createUserWithEmailAndPassword(
-          email: email, password: password);
-      User? user = result.user;
-
-      if (user != null) {
-        await _firestoreService.createUserDocument(
-          user: user,
-          email: email,
-        );
-      }
-      return user;
-
+        email: email,
+        password: password,
+      );
+      return result.user;
     } on FirebaseAuthException catch (e) {
-      debugPrint('FirebaseAuthException during registration:');
-      debugPrint('Code: ${e.code}');
-      debugPrint('Message: ${e.message}');
-      rethrow; 
-    } catch (e, stackTrace) {
-      debugPrint('Generic error during registration: $e');
-      debugPrint('Stack trace: $stackTrace'); 
-      throw Exception('Terjadi kesalahan tidak terduga saat registrasi. Coba lagi nanti.'); 
+      debugPrint(e.toString());
+      // Melempar pesan error yang lebih mudah dibaca
+      if (e.code == 'weak-password') {
+        throw 'Password terlalu lemah.';
+      } else if (e.code == 'email-already-in-use') {
+        throw 'Email ini sudah terdaftar.';
+      }
+      throw e.message ?? 'Terjadi kesalahan saat registrasi.';
+    } catch (e) {
+      throw e.toString();
     }
   }
-  Future<User?> signInWithEmailPassword({
-    required String email, 
-    required String password,
-  }) async {
+
+  // --- FUNGSI LOGIN (MASUK) ---
+  Future<User?> signIn({required String email, required String password}) async {
     try {
-      debugPrint('--> Mencoba login dengan email: "$email"');
       UserCredential result = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
-      debugPrint('--> Login berhasil untuk user: ${result.user?.uid}'); 
       return result.user;
-
     } on FirebaseAuthException catch (e) {
-      debugPrint('FirebaseAuthException during login:');
-      debugPrint('Code: ${e.code}');
-      debugPrint('Message: ${e.message}');
+      debugPrint(e.toString());
       if (e.code == 'user-not-found') {
-         throw FirebaseAuthException(code: 'user-not-found', message: 'Email tidak terdaftar.'); 
+        throw 'Email tidak ditemukan.';
       } else if (e.code == 'wrong-password') {
-         throw FirebaseAuthException(code: 'wrong-password', message: 'Password salah.');
-      } else if (e.code == 'invalid-credential'){
-          throw FirebaseAuthException(code: 'invalid-credential', message: 'Email atau password salah.');
+        throw 'Password salah.';
       }
-      rethrow; 
-    } catch (e, stackTrace) {
-      debugPrint('Generic error during login: $e');
-      debugPrint('Stack trace: $stackTrace');
-      throw Exception('Terjadi kesalahan tidak terduga saat login. Coba lagi nanti.');
+      throw e.message ?? 'Gagal login. Periksa koneksi internet.';
+    } catch (e) {
+      throw e.toString();
     }
   }
+
+  // --- FUNGSI LOGOUT (KELUAR) ---
   Future<void> signOut() async {
     await _auth.signOut();
   }
+
+  // --- CEK STATUS LOGIN ---
+  User? get currentUser => _auth.currentUser;
 }
