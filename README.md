@@ -92,7 +92,7 @@ Akun Firebase & Proyek TMDb (API Key).
 Langkah 1: Clone Repositori
 Bash
 
-git clone https://github.com/username-anda/Islamic-Movie-Plaform-Final-Project.git
+git clone https://github.com/Nachsyas/Islamic-Movie-Plaform-Final-Project.git
 cd Islamic-Movie-Plaform-Final-Project
 Langkah 2: Instal Dependensi
 Jalankan perintah berikut di terminal untuk mengunduh semua library yang dibutuhkan (seperti firebase_core, http, url_launcher, dll).
